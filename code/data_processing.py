@@ -65,14 +65,17 @@ class process_data:
         # Shuffle training data
         idx = np.arange(len(self.y_train_over))
         np.random.shuffle(idx)
-        print(self.y_train_over.shape)
-        #print(self.x_train_over);exit()
         self.y_train_over = self.y_train_over[idx]
         self.x_train_over = self.x_train_over.iloc[idx]
 
+        idx = np.arange(len(self.y_train))
+        np.random.shuffle(idx)
+        self.y_train = self.y_train[idx]
+        self.x_train = self.x_train.iloc[idx]
+
         # Standardize data
         scaler = StandardScaler()
-        self.x_train_over = scaler.fit_transform(self.x_train_over)
+        self.x_train = scaler.fit_transform(self.x_train)
         self.x_test = scaler.transform(self.x_test)
 
         # Print analysis
