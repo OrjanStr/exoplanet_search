@@ -97,7 +97,7 @@ def evaluate_model(model, x_train, x_test, y_train, y_test, rp_title, cm_title, 
         plt.savefig("../visuals/" + rp_name + ".pdf")
     plt.show()
 
-def bootstrap(model, x_train, x_test, y_train, y_test, n_iter=10, print_progress=True):
+def bootstrap(model, x_train, x_test, y_train, y_test, n_iter=200, print_progress=True):
     # Set up arrays for storage
     accuracy_scores = np.zeros(n_iter)
     recall_scores = np.zeros(n_iter)
@@ -156,6 +156,59 @@ def tune_decision_tree():
     cm_name = "cm_over_dt"
     rp_name = "rp_over_dt"
     evaluate_model(dt, x_train_up, x_test, y_train_up, y_test, rp_title, cm_title, rp_name, cm_name)
+
+    # Perform random search--------------------------------------------------------------
+    n_iter = 10
+    # Set up parameters
+    max_depth = range(2,10)
+    criterion = ['gini', 'entropy']
+    min_samples_split = range(2,10)
+    min_samples_leaf = range(2,5)
+
+    # Arrays for storing used parameters
+    max_depth_array           = []
+    criterion_array           = []
+    min_samples_split_array   = []
+    min_samples_leaf_array    = []
+
+    # Storing result
+    accuracy_scores = []
+    predictions = []
+
+    # Search
+    print("Performing random search")
+    for i in range(n_iter):
+        # Fetch random parameters
+        max_depth_array.append(np.random.choice(max_depth))
+        criterion_array.append(np.random.choice(criterion))
+        min_samples_split_array.append(np.random.choice(min_samples_split))
+        min_samples_leaf_array.append(np.random.choice(min_samples_leaf))
+
+        # Set up model
+        model = DecisionTreeClassifier(
+        #max_depth = max_depth_array[i],
+        #criterion = criterion_array[i],
+        #min_samples_split = min_samples_split_array[i],
+        #min_samples_leaf = min_samples_leaf_array[i]
+        )
+
+        # Make prediction
+        model.fit(x_train_up, y_train_up)
+        y_pred = model.predict(x_test)
+        predictions.append(y_pred)
+        accuracy_scores.append(metrics.recall_score(y_test, y_pred))
+
+        # Print progress
+        print("Iteration: %i/%i" %(i+1, n_iter))
+
+    idx = np.argmax(accuracy_scores)
+    print("max_depth: ", max_depth_array[i])
+    print("criterion: ", criterion_array[i])
+    print("min_samples_split: ", min_samples_split_array[i])
+    print("min_samples_leaf: ", min_samples_leaf_array[i])
+    print(metrics.confusion_matrix(y_test, predictions[idx]))
+    exit()
+
 
     # Bootstrap
     print("\n\nBootstrap resampling on oversampled model")
@@ -229,16 +282,17 @@ def tune_random_forest():
     }
 
     # Set up model and fit to data
-    search = RandomizedSearchCV(rf, params, n_iter=2)
+    search = RandomizedSearchCV(rf, params, n_iter=15)
     search.fit(x_train, y_train)
     print(search.best_params_)
     print(search.best_score_)
 
+    rf_tune = RandomForestClassifier(search.best_params_)
     cm_title = "Oversample confusion matrix: Tuned random forest"
     rp_title = "Random forest: SMOTE oversampling, tuned"
     cm_name = "rf_cm_over_tune"
     rp_name = "rf_rp_over_tune"
-    evaluate_model(rf_tune, x_train_up, x_test, y_train_up, y_test, rp_title, cm_title, rp_name, cm_name)
+    evaluate_model(search, x_train, x_test, y_train, y_test, rp_title, cm_title, rp_name, cm_name)
 
 tune_decision_tree(); exit()
 #tune_random_forest(); exit()

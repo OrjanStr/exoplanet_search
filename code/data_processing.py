@@ -77,8 +77,8 @@ class process_data:
 #        self.df_train = self.df_train.drop((lower_outlier.index), axis=0)
 
         #shrinking dataset
-        self.x_train = self.x_train.iloc[:300,:]
-        self.y_train = self.y_train.iloc[:300]
+        self.x_train = self.x_train#.iloc[:300,:]
+        self.y_train = self.y_train#.iloc[:300]
 
 
         # How many positive/negative labels?
