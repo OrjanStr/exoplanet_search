@@ -8,30 +8,25 @@ from IPython.display import display
 from sklearn                  import metrics
 from sklearn.model_selection  import train_test_split
 from sklearn.model_selection  import cross_validate
-from sklearn.model_selection  import GridSearchCV
+from sklearn.model_selection  import GridSearchCV, ParameterGrid
 from sklearn.model_selection  import StratifiedKFold
 from sklearn.preprocessing    import LabelEncoder
 from imblearn.over_sampling   import SMOTE
 from imblearn.pipeline        import Pipeline
+from sklearn.linear_model import RidgeClassifier
 
 
 # Models
 from sklearn.linear_model  import LogisticRegression
 from sklearn.tree          import DecisionTreeClassifier
 from sklearn.ensemble      import RandomForestClassifier
-from xgboost               import XGBClassifier
 from sklearn.svm           import SVC
 
 
 # Self made classes
 from data_processing import process_data
 
-df = process_data(print_results=False)
-x_train = df.x_train
-y_train = df.y_train
-x_test  = df.x_test
-y_test  = df.y_test
-
+    
 def evaluate_model(y_test, y_pred):
     """ Evaluate model by conventional train test split """
 
@@ -40,17 +35,13 @@ def evaluate_model(y_test, y_pred):
     print("Accuracy: ", metrics.accuracy_score(y_test, y_pred))
     print("Precision: ", metrics.precision_score(y_test, y_pred))
     print("Recall: ", metrics.recall_score(y_test, y_pred))
-    print("ROC-AUC: ", metrics.roc_auc_score(y_test, y_pred))
-
+    
     # Confusion Matrix
     print("Confusion matrix: (TN in top left)")
     print(metrics.confusion_matrix(y_test, y_pred))
-    """
-    # ROC-plot
-    fpr, trp, thresholds = metrics.roc_curve(y_test, y_prob)
-    plt.plot(fpr, trp)
-    plt.show()
-    """
+  
+
+                                 
 #evaluate_model_TS();
 def evaluate_model_CV(model, n_folds):
     """ Evaluate given model using cross validation """
@@ -99,6 +90,36 @@ def tune_decision_tree():
     "criterion": ["gini", "entropy"],
     }
 
+
+def tune_SVM():
+    print("Starting parameter tuning: Support Vector Machine...")
+    print("Making pipeline...")
+    
+    param_pipeline = {"classification__gamma": [0.1,10,100], 'classification__C': [0.1, 10,100], "classification__kernel": ['poly','rbf']}
+
+    model = Pipeline([
+            ('smt', SMOTE()),
+            ('classification', SVC())])
+    
+    print("Performing grid search...")
+    grid = GridSearchCV(model, param_pipeline)
+    grid.fit(x_train, y_train)
+    y_pred = grid.predict(x_test)
+    evaluate_model(y_test, y_pred)
+    
+
+
+def tune_random_forest():
+    print("Starting parameter tuning: Random Forest...")
+    grid = RandomForestClassifier(n_estimators = 100, max_depth=10)
+    print("Performing grid search")
+    #grid = GridSearchCV(model, param, verbose=True)
+    grid.fit(x_train, y_train)
+    y_pred = grid.predict(x_test)
+    evaluate_model(y_test, y_pred)
+    
+    param = {'max_depth': [2,4,5]}
+
 def tune_logistic_regression():
     print("Starting parameter tuning: Logistic Regression...")
 
@@ -146,35 +167,84 @@ def kfold_with_smote(model):
     print("avg Recall: ",       np.mean(recall_scores))
     print("avg ROC-AUC: ",      np.mean(roc_auc_scores))
 
-smoter = SMOTE()
-#kfold_with_smote(model)
-param = {'max_depth': [2,4,5]}
-x_train, y_train = smoter.fit_resample(x_train, y_train)
-grid = RandomForestClassifier(n_estimators = 100, max_depth=10)
-print("Performing grid search")
-#grid = GridSearchCV(model, param, verbose=True)
-grid.fit(x_train, y_train)
-y_pred = grid.predict(x_test)
-evaluate_model(y_test, y_pred)
-exit()
 
-print(" Making pipeline...")
-logreg = LogisticRegression()
-param = {"classification__penalty": ['l2'], 'classification__C': [0.1, 0.5, 1.0, 10, 100]}
-param = {"penalty": ['l2'], 'C': [0.1, 0.5, 1.0, 10, 100]}
-#param = {'classification__max_leaf_nodes': list(range(2, 10)),
-#        'classification__min_samples_split': [2, 3, 4]}
-logreg.fit(x_train, y_train)
-y_ped = logred.predict(x_test)
-evaluate_model(y_test, y_pred)
-"""
-model = Pipeline([
-        ('smt', SMOTE()),
-        ('classification', LogisticRegression())])
-model = LogisticRegression()
-print("Performing grid search")
-grid = GridSearchCV(model, param)
-grid.fit(x_train, y_train)
-y_pred = grid.predict(x_test)
-evaluate_model(y_test, y_pred)
-"""
+
+#getting training and testing data
+df = process_data(print_results=False)
+x_train = df.x_train_over
+y_train = df.y_train_over
+x_test  = df.x_test
+y_test  = df.y_test
+
+
+#tune_SVM()
+kernels = ['linear','poly','rbf','sigmoid']
+cs = [0.001,0.1,1,100,1000]
+gammas = [0.001,0.1,1,100,1000]
+
+c_lst = np.logspace(-4,0,20)
+plotting = []
+#for i in range(10):
+#    for k in range(10):
+#        print ("values kernel, c, gamma", cs[i], gammas[k])
+for k in range(20):
+    for i in range(20):
+        print (c_lst[i])
+        model = SVC(kernel = 'sigmoid', C = c_lst[k] ,gamma = c_lst[i], probability = True )
+        model.fit(x_train,y_train)
+        y_pred = model.predict(x_test)
+        y_prob = model.predict_proba(x_test)[:,1]
+        evaluate_model(y_test, y_pred)
+
+
+
+
+
+
+#plt.plot(c_lst,plotting)
+#plt.show()
+#exit()
+#
+#print(" Making pipeline...")
+#logreg = LogisticRegression()
+#param = {"classification__penalty": ['l2'], 'classification__C': [0.1, 0.5, 1.0, 10, 100]}
+#param = {"penalty": ['l2'], 'C': [0.1, 0.5, 1.0, 10, 100]}
+##param = {'classification__max_leaf_nodes': list(range(2, 10)),
+##        'classification__min_samples_split': [2, 3, 4]}
+#logreg.fit(x_train, y_train)
+#y_ped = logreg.predict(x_test)
+#evaluate_model(y_test, y_pred)
+#"""
+#model = Pipeline([
+#        ('smt', SMOTE()),
+#        ('classification', LogisticRegression())])
+#model = LogisticRegression()
+#print("Performing grid search")
+#grid = GridSearchCV(model, param)
+#grid.fit(x_train, y_train)
+#y_pred = grid.predict(x_test)
+#evaluate_model(y_test, y_pred)
+#"""
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
