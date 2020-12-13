@@ -10,6 +10,7 @@ import sklearn
 from sklearn.preprocessing import StandardScaler
 from sklearn.preprocessing import Normalizer
 import seaborn as sb
+
 class process_data:
     def __init__(self, print_results=True):
         """
@@ -38,15 +39,15 @@ class process_data:
         """ Read the two csv files and store into train and test """
         self.df_train   = pd.read_csv(self.path_train)
         self.x_train    = self.df_train.copy()
-        self.y_train    = self.x_train.pop('LABEL')        
-        
+        self.y_train    = self.x_train.pop('LABEL')
+
         self.df_test    = pd.read_csv(self.path_test)
         self.x_test     = self.df_test.copy()
         self.y_test     = self.x_test.pop('LABEL')
-        
+
     def process(self):
         """ Process data for ease of use """
-        
+
         #plotting outliers
         ax = sb.boxplot(data=self.df_train, x='LABEL', y = 'FLUX.1')
         ax.set(xlabel= "Class", ylabel = 'Flux for Feature[0]')
@@ -58,7 +59,7 @@ class process_data:
         star_pos = self.x_train.iloc[0]
         star_neg = self.x_train.iloc[50]
         t = np.linspace(0,1920, len(star_pos))
-        
+
         fig, axs = plt.subplots(2, sharex= True)
         axs[0].plot(t,star_pos)
         axs[1].plot(t,star_neg)
@@ -67,19 +68,19 @@ class process_data:
         axs[1].set(ylabel = 'Flux', title =  'Non-exo-planet Star (#51T)')
         plt.savefig('star_flux.pdf')
         print("plot saved!")
-        
+
         #removing outliers
         upper_outlier =  self.df_train[self.df_train['FLUX.1']>40000]
         self.df_train = self.df_train.drop((upper_outlier.index), axis=0)
-            
+
 #        lower_outlier =  self.df_train[self.df_train['FLUX.1']<-200000]
 #        self.df_train = self.df_train.drop((lower_outlier.index), axis=0)
-        
+
         #shrinking dataset
         self.x_train = self.x_train.iloc[:300,:]
         self.y_train = self.y_train.iloc[:300]
-        
-        
+
+
         # How many positive/negative labels?
         count_train = self.y_train.value_counts().values
         count_test  = self.y_test.value_counts().values
@@ -103,7 +104,7 @@ class process_data:
 
         idx = np.arange(len(self.y_train))
         np.random.shuffle(idx)
-        
+
         self.y_train = self.y_train[idx]
         self.x_train = self.x_train.iloc[idx]
 
@@ -111,7 +112,7 @@ class process_data:
         scaler = StandardScaler()
         self.x_train = scaler.fit_transform(self.x_train)
         self.x_test = scaler.transform(self.x_test)
- 
+        self.x_train = scaler.transform(self.x_train)
 
         # Print analysis
         if self.print_results:
