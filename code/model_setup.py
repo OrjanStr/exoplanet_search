@@ -29,7 +29,10 @@ from data_processing import process_data
     
 def evaluate_model(y_test, y_pred):
     """ Evaluate model by conventional train test split """
-
+    goodResult = metrics.confusion_matrix(y_test, y_pred)[1][1] >= 3 and \
+                 metrics.confusion_matrix(y_test, y_pred)[0][0] >= 300
+    
+#    if goodResult:
     # Run through metrics
     print("\nClassification Results")
     print("Accuracy: ", metrics.accuracy_score(y_test, y_pred))
@@ -92,21 +95,20 @@ def tune_decision_tree():
 
 
 def tune_SVM():
-    print("Starting parameter tuning: Support Vector Machine...")
-    print("Making pipeline...")
-    
-    param_pipeline = {"classification__gamma": [0.1,10,100], 'classification__C': [0.1, 10,100], "classification__kernel": ['poly','rbf']}
 
-    model = Pipeline([
-            ('smt', SMOTE()),
-            ('classification', SVC())])
-    
-    print("Performing grid search...")
-    grid = GridSearchCV(model, param_pipeline)
-    grid.fit(x_train, y_train)
-    y_pred = grid.predict(x_test)
-    evaluate_model(y_test, y_pred)
-    
+# 325 - 5 C=  0.21544346900318834 gamma=  0.00021544346900318823
+# 527 4 C=  C=  0.46415888336127786 gamma=  0.0001291549665014884
+    c_lst = np.linspace(-5,-3,10)
+    gamma_lst = np.logspace(-5,-3,10)
+    for k in range(1):
+        for i in range(1):
+            print ("C= ", c_lst[k] , "gamma= ",gamma_lst[i] )
+            model = SVC(kernel = 'sigmoid', C =  0.46415888336127786 ,gamma = 0.0001291549665014884, probability = True )
+            model.fit(x_train,y_train)
+            y_pred = model.predict(x_test)
+            y_prob = model.predict_proba(x_test)[:,1]
+            evaluate_model(y_test, y_pred)
+        
 
 
 def tune_random_forest():
@@ -177,25 +179,7 @@ x_test  = df.x_test
 y_test  = df.y_test
 
 
-#tune_SVM()
-kernels = ['linear','poly','rbf','sigmoid']
-cs = [0.001,0.1,1,100,1000]
-gammas = [0.001,0.1,1,100,1000]
-
-c_lst = np.logspace(-4,0,20)
-plotting = []
-#for i in range(10):
-#    for k in range(10):
-#        print ("values kernel, c, gamma", cs[i], gammas[k])
-for k in range(20):
-    for i in range(20):
-        print (c_lst[i])
-        model = SVC(kernel = 'sigmoid', C = c_lst[k] ,gamma = c_lst[i], probability = True )
-        model.fit(x_train,y_train)
-        y_pred = model.predict(x_test)
-        y_prob = model.predict_proba(x_test)[:,1]
-        evaluate_model(y_test, y_pred)
-
+tune_SVM()
 
 
 
