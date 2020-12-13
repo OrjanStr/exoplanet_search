@@ -31,6 +31,7 @@ class process_data:
         self.path_test      = "../data/exoTest.csv"     # Path of file containing test data
         self.print_results  = print_results             # Print analysis
 
+
         # Read and process data
         self.read_data()
         self.process()
@@ -47,31 +48,7 @@ class process_data:
 
     def process(self):
         """ Process data for ease of use """
-<<<<<<< HEAD
-        
-#        #plotting outliers
-#        ax = sb.boxplot(data=self.df_train, x='LABEL', y = 'FLUX.1')
-#        ax.set(xlabel= "Class", ylabel = 'Flux for Feature[0]')
-#        plt.title('First recorded flux for training stars')
-#        print("plot saved!")
-#        plt.savefig('outliers.pdf')
-#
-#        #plotting example data
-#        star_pos = self.x_train.iloc[0]
-#        star_neg = self.x_train.iloc[50]
-#        t = np.linspace(0,1920, len(star_pos))
-#        
-#        fig, axs = plt.subplots(2, sharex= True)
-#        axs[0].plot(t,star_pos)
-#        axs[1].plot(t,star_neg)
-#        plt.xlabel('Time[Hours]')
-#        axs[0].set(ylabel = 'Flux', title = 'Exo-planet Star (#1)')
-#        axs[1].set(ylabel = 'Flux', title =  'Non-exo-planet Star (#51T)')
-#        plt.savefig('star_flux.pdf')
-#        print("plot saved!")
-        
-=======
-
+            
         #plotting outliers
         ax = sb.boxplot(data=self.df_train, x='LABEL', y = 'FLUX.1')
         ax.set(xlabel= "Class", ylabel = 'Flux for Feature[0]')
@@ -83,17 +60,16 @@ class process_data:
         star_pos = self.x_train.iloc[0]
         star_neg = self.x_train.iloc[50]
         t = np.linspace(0,1920, len(star_pos))
-
+        
         fig, axs = plt.subplots(2, sharex= True)
         axs[0].plot(t,star_pos)
         axs[1].plot(t,star_neg)
         plt.xlabel('Time[Hours]')
         axs[0].set(ylabel = 'Flux', title = 'Exo-planet Star (#1)')
-        axs[1].set(ylabel = 'Flux', title =  'Non-exo-planet Star (#51T)')
+        axs[1].set(ylabel = 'Flux', title =  'Non-exo-planet Star (#51)')
         plt.savefig('star_flux.pdf')
         print("plot saved!")
-
->>>>>>> 3ee148b31f33b23624a021382355ade1e9f628ff
+        
         #removing outliers
         upper_outlier =  self.df_train[self.df_train['FLUX.1']>40000]
         self.df_train = self.df_train.drop((upper_outlier.index), axis=0)
@@ -102,8 +78,8 @@ class process_data:
 #        self.df_train = self.df_train.drop((lower_outlier.index), axis=0)
 
         #shrinking dataset
-        self.x_train = self.x_train.iloc[:300,:]
-        self.y_train = self.y_train.iloc[:300]
+#        self.x_train = self.x_train.iloc[:300,:]
+#        self.y_train = self.y_train.iloc[:300]
 
 
         # How many positive/negative labels?
@@ -114,12 +90,14 @@ class process_data:
         sm = SMOTE(random_state=42)
         self.x_train_over, self.y_train_over = sm.fit_sample(self.x_train, self.y_train)
         over_count = self.y_train_over.value_counts().values
+        
 
         # Convert labels to one hot
         Encoder = LabelEncoder()
         self.y_train        = Encoder.fit_transform(self.y_train)
         self.y_test         = Encoder.fit_transform(self.y_test)
         self.y_train_over   = Encoder.fit_transform(self.y_train_over)
+
 
         # Shuffle training data
         idx = np.arange(len(self.y_train_over))
@@ -141,6 +119,33 @@ class process_data:
 
         # Print analysis
         if self.print_results:
+                    
+                    
+            labels = ['Train' , 'Test']
+            pos_count = [count_train[1], count_test[1]]
+            neg_count = [count_train[0], count_test[0]]
+            
+            x = np.arange(len(labels))  # the label locations
+            width = 0.35  # the width of the bars
+
+
+            fig, ax = plt.subplots()
+            bar1 = ax.bar(x - width/2, neg_count, width, label='No planet')
+            bar2 = ax.bar(x + width/2, pos_count, width, label='Planet')
+            ax.set_xticks(x)
+            ax.set_xticklabels(labels)
+            
+            for rect in bar1 + bar2:
+                height = rect.get_height()
+                plt.text(rect.get_x() + rect.get_width()/2.0, height, '%d' % int(height), ha='center', va='bottom')
+
+            plt.title('Data Distribution', fontsize = 16)
+            plt.ylabel('Number of stars', fontsize = 14)
+            plt.legend()
+            plt.tight_layout()
+            plt.savefig('chart.pdf')
+            print("plot saved!")
+
             print("\nData properties -------------")
             print("Train (rows, cols): ", self.df_train.shape)
             print("Test (rows, cols): ", self.df_test.shape)

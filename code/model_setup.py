@@ -33,61 +33,65 @@ def evaluate_model(model, x_train, x_test, y_train, y_test, rp_title, cm_title, 
     y_train_pred = model.predict(x_train)
     y_test_pred  = model.predict(x_test)
 
-    # Run through metrics
-    print("\nClassification Results on train")
-    print("Accuracy: ",  metrics.accuracy_score(y_train, y_train_pred))
-    print("Precision: ", metrics.precision_score(y_train, y_train_pred))
-    print("Recall: ",    metrics.recall_score(y_train, y_train_pred))
-
-    C_train = metrics.confusion_matrix(y_train, y_train_pred)
-    print("Confusion matrix: (TN in top left)\n", C_train)
-
-    print("\nClassification Results on test")
-    print("Accuracy: ",  metrics.accuracy_score(y_test, y_test_pred))
-    print("Precision: ", metrics.precision_score(y_test, y_test_pred))
-    print("Recall: ",    metrics.recall_score(y_test, y_test_pred))
-
-    C_test = metrics.confusion_matrix(y_test, y_test_pred)
-    print("Confusion matrix: (TN in top left)\n", C_test)
-
-    # Plot confusion matrices
-    fig, (ax1, ax2) = plt.subplots(1, 2, figsize=(7, 4))
-    fig.suptitle(cm_title, fontsize=16)
-
-    sns.heatmap(C_train, ax=ax1, annot=True, cbar=False, cmap="Blues", square=True, fmt="d", annot_kws={"fontsize":12})
-    sns.heatmap(C_test,  ax=ax2, annot=True, cbar=False, cmap="Blues", square=True, fmt="d", annot_kws={"fontsize":12})
-    ax1.set_title("Train", fontsize=14)
-    ax2.set_title("Test", fontsize=14)
-
-    ax1.set_xlabel("Predicted label", fontsize=14)
-    ax2.set_xlabel("Predicted label", fontsize=14)
-    ax1.set_ylabel("True label", fontsize=14)
-
-    ax1.tick_params(labelsize='12')
-    ax2.tick_params(labelsize='12')
-
-    # Save figures
-    if save:
-        plt.savefig("../visuals/" + cm_name + ".pdf")
-    plt.show()
-
-    # Plot precision recall curve (only for test data)
-    y_prob = model.predict_proba(x_test)[:,1]
-    pres, rec, thresholds = metrics.precision_recall_curve(y_test, y_prob)
-
-    plt.style.use('seaborn-whitegrid')
-    no_skill = len(y_test[y_test==1]) / len(y_test)
-    plt.plot([0,1], [no_skill, no_skill], "--", label="No skill")
-    plt.plot(rec, pres, label = "model")
-    plt.xlabel("Recall", fontsize=14)
-    plt.ylabel("Precision", fontsize=14)
-    plt.title("Recall precision curve \n" + rp_title, fontsize=16)
-    plt.tick_params(labelsize='12')
-    plt.legend(fontsize=12)
-
-    if save:
-        plt.savefig("../visuals/" + rp_name + ".pdf")
-    plt.show()
+    goodTrainscore = metrics.confusion_matrix(y_train, y_train_pred)[1][1]>170 and metrics.confusion_matrix(y_train, y_train_pred)[0][0]>170
+    goodTestscore = metrics.confusion_matrix(y_test, y_test_pred)[1][1]>2 #and metrics.confusion_matrix(y_test, y_test_pred)[0][0]>200
+    
+    if goodTrainscore:
+        # Run through metrics
+        print("\nClassification Results on train")
+        print("Accuracy: ",  metrics.accuracy_score(y_train, y_train_pred))
+        print("Precision: ", metrics.precision_score(y_train, y_train_pred))
+        print("Recall: ",    metrics.recall_score(y_train, y_train_pred))
+    
+        C_train = metrics.confusion_matrix(y_train, y_train_pred)
+        print("Confusion matrix: (TN in top left)\n", C_train)
+    
+        print("\nClassification Results on test")
+        print("Accuracy: ",  metrics.accuracy_score(y_test, y_test_pred))
+        print("Precision: ", metrics.precision_score(y_test, y_test_pred))
+        print("Recall: ",    metrics.recall_score(y_test, y_test_pred))
+    
+        C_test = metrics.confusion_matrix(y_test, y_test_pred)
+        print("Confusion matrix: (TN in top left)\n", C_test)
+    
+        # Plot confusion matrices
+        fig, (ax1, ax2) = plt.subplots(1, 2, figsize=(7, 4))
+        fig.suptitle(cm_title, fontsize=16)
+    
+        sns.heatmap(C_train, ax=ax1, annot=True, cbar=False, cmap="Blues", square=True, fmt="d", annot_kws={"fontsize":12})
+        sns.heatmap(C_test,  ax=ax2, annot=True, cbar=False, cmap="Blues", square=True, fmt="d", annot_kws={"fontsize":12})
+        ax1.set_title("Train", fontsize=14)
+        ax2.set_title("Test", fontsize=14)
+    
+        ax1.set_xlabel("Predicted label", fontsize=14)
+        ax2.set_xlabel("Predicted label", fontsize=14)
+        ax1.set_ylabel("True label", fontsize=14)
+    
+        ax1.tick_params(labelsize='12')
+        ax2.tick_params(labelsize='12')
+    
+        # Save figures
+        if save:
+            plt.savefig("../visuals/" + cm_name + ".pdf")
+        plt.show()
+    
+    #    # Plot precision recall curve (only for test data)
+    #    y_prob = model.predict_proba(x_test)[:,1]
+    #    pres, rec, thresholds = metrics.precision_recall_curve(y_test, y_prob)
+    #
+    #    plt.style.use('seaborn-whitegrid')
+    #    no_skill = len(y_test[y_test==1]) / len(y_test)
+    #    plt.plot([0,1], [no_skill, no_skill], "--", label="No skill")
+    #    plt.plot(rec, pres, label = "model")
+    #    plt.xlabel("Recall", fontsize=14)
+    #    plt.ylabel("Precision", fontsize=14)
+    #    plt.title("Recall precision curve \n" + rp_title, fontsize=16)
+    #    plt.tick_params(labelsize='12')
+    #    plt.legend(fontsize=12)
+    
+        if save:
+            plt.savefig("../visuals/" + rp_name + ".pdf")
+        plt.show()
 
 def bootstrap(model, x_train, x_test, y_train, y_test, n_iter=10, print_progress=True):
     # Set up arrays for storage
@@ -188,19 +192,17 @@ def tune_decision_tree():
     plt.show()
 
 def tune_SVM():
-
-# 325 - 5 C=  0.21544346900318834 gamma=  0.00021544346900318823
-# 527 4 C=  C=  0.46415888336127786 gamma=  0.0001291549665014884
-    c_lst = np.linspace(-5,-3,10)
-    gamma_lst = np.logspace(-5,-3,10)
-    for k in range(1):
-        for i in range(1):
+#C=  0.01 gamma=  0.00020691380811147902
+#C=  0.01 gamma=  0.0006951927961775605
+#C=  0.008858667904100823 gamma=  0.00029763514416313193
+    c_lst = np.logspace(-5,2,20)
+    gamma_lst = np.logspace(-5,2,20)
+    for k in range(20):
+        for i in range(20):
             print ("C= ", c_lst[k] , "gamma= ",gamma_lst[i] )
-            model = SVC(kernel = 'sigmoid', C =  0.46415888336127786 ,gamma = 0.0001291549665014884, probability = True )
-            model.fit(x_train_up,y_train_up)
-            y_pred = model.predict(x_test)
-            y_prob = model.predict_proba(x_test)[:,1]
-            evaluate_model(y_test, y_pred)
+            model = SVC(kernel = 'sigmoid', C =  c_lst[k] ,gamma = gamma_lst[i], probability = True )
+            evaluate_model(model, x_train_up, x_test, y_train_up, y_test, 'SVM', 'Confuse...yes', 'svm_rp_name', 'svm_cm_name')
+
 
 
 
@@ -232,9 +234,6 @@ def tune_random_forest():
     cm_name = "rf_cm_over_tune"
     rp_name = "rf_rp_over_tune"
     evaluate_model(rf_tune, x_train_up, x_test, y_train_up, y_test, rp_title, cm_title, rp_name, cm_name)
-
-tune_decision_tree(); exit()
-#tune_random_forest(); exit()
 
 def tune_logistic_regression():
     print("Starting parameter tuning: Logistic Regression...")
@@ -293,33 +292,9 @@ y_train = df.y_train
 x_test  = df.x_test
 y_test  = df.y_test
 
+
 tune_SVM()
-
-
-
-
-
-#plt.plot(c_lst,plotting)
-#plt.show()
-#exit()
 #
-#print(" Making pipeline...")
-#logreg = LogisticRegression()
-#param = {"classification__penalty": ['l2'], 'classification__C': [0.1, 0.5, 1.0, 10, 100]}
-#param = {"penalty": ['l2'], 'C': [0.1, 0.5, 1.0, 10, 100]}
-##param = {'classification__max_leaf_nodes': list(range(2, 10)),
-##        'classification__min_samples_split': [2, 3, 4]}
-#logreg.fit(x_train, y_train)
-#y_ped = logreg.predict(x_test)
-#evaluate_model(y_test, y_pred)
-#"""
-#model = Pipeline([
-#        ('smt', SMOTE()),
-#        ('classification', LogisticRegression())])
-#model = LogisticRegression()
-#print("Performing grid search")
-#grid = GridSearchCV(model, param)
-#grid.fit(x_train, y_train)
-#y_pred = grid.predict(x_test)
-#evaluate_model(y_test, y_pred)
-#"""
+#
+#tune_decision_tree()
+#tune_random_forest()
