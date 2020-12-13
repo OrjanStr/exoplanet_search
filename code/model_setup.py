@@ -26,14 +26,6 @@ from sklearn.svm           import SVC
 # Self made classes
 from data_processing import process_data
 
-#getting training and testing data
-df = process_data(print_results=False)
-x_train_up  = df.x_train_over   # Oversampled training data
-y_train_up  = df.y_train_over   # Oversampled training target
-x_train = df.x_train
-y_train = df.y_train
-x_test  = df.x_test
-y_test  = df.y_test
 
 def evaluate_model(model, x_train, x_test, y_train, y_test, rp_title, cm_title, rp_name, cm_name, save=True):
     """ Evaluate model by chosen metrics """
@@ -205,7 +197,7 @@ def tune_SVM():
         for i in range(1):
             print ("C= ", c_lst[k] , "gamma= ",gamma_lst[i] )
             model = SVC(kernel = 'sigmoid', C =  0.46415888336127786 ,gamma = 0.0001291549665014884, probability = True )
-            model.fit(x_train,y_train)
+            model.fit(x_train_up,y_train_up)
             y_pred = model.predict(x_test)
             y_prob = model.predict_proba(x_test)[:,1]
             evaluate_model(y_test, y_pred)
@@ -292,14 +284,14 @@ def kfold_with_smote(model):
     print("avg ROC-AUC: ",      np.mean(roc_auc_scores))
 
 
-
 #getting training and testing data
 df = process_data(print_results=False)
-x_train = df.x_train_over
-y_train = df.y_train_over
+x_train_up  = df.x_train_over   # Oversampled training data
+y_train_up  = df.y_train_over   # Oversampled training target
+x_train = df.x_train
+y_train = df.y_train
 x_test  = df.x_test
 y_test  = df.y_test
-
 
 tune_SVM()
 
