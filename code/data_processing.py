@@ -47,6 +47,30 @@ class process_data:
 
     def process(self):
         """ Process data for ease of use """
+<<<<<<< HEAD
+        
+#        #plotting outliers
+#        ax = sb.boxplot(data=self.df_train, x='LABEL', y = 'FLUX.1')
+#        ax.set(xlabel= "Class", ylabel = 'Flux for Feature[0]')
+#        plt.title('First recorded flux for training stars')
+#        print("plot saved!")
+#        plt.savefig('outliers.pdf')
+#
+#        #plotting example data
+#        star_pos = self.x_train.iloc[0]
+#        star_neg = self.x_train.iloc[50]
+#        t = np.linspace(0,1920, len(star_pos))
+#        
+#        fig, axs = plt.subplots(2, sharex= True)
+#        axs[0].plot(t,star_pos)
+#        axs[1].plot(t,star_neg)
+#        plt.xlabel('Time[Hours]')
+#        axs[0].set(ylabel = 'Flux', title = 'Exo-planet Star (#1)')
+#        axs[1].set(ylabel = 'Flux', title =  'Non-exo-planet Star (#51T)')
+#        plt.savefig('star_flux.pdf')
+#        print("plot saved!")
+        
+=======
 
         #plotting outliers
         ax = sb.boxplot(data=self.df_train, x='LABEL', y = 'FLUX.1')
@@ -69,6 +93,7 @@ class process_data:
         plt.savefig('star_flux.pdf')
         print("plot saved!")
 
+>>>>>>> 3ee148b31f33b23624a021382355ade1e9f628ff
         #removing outliers
         upper_outlier =  self.df_train[self.df_train['FLUX.1']>40000]
         self.df_train = self.df_train.drop((upper_outlier.index), axis=0)

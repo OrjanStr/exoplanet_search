@@ -26,14 +26,6 @@ from sklearn.svm           import SVC
 # Self made classes
 from data_processing import process_data
 
-#getting training and testing data
-df = process_data(print_results=False)
-x_train_up  = df.x_train_over   # Oversampled training data
-y_train_up  = df.y_train_over   # Oversampled training target
-x_train = df.x_train
-y_train = df.y_train
-x_test  = df.x_test
-y_test  = df.y_test
 
 def evaluate_model(model, x_train, x_test, y_train, y_test, rp_title, cm_title, rp_name, cm_name, save=True):
     """ Evaluate model by chosen metrics """
@@ -249,20 +241,21 @@ def tune_decision_tree():
     plt.show()
 
 def tune_SVM():
-    print("Starting parameter tuning: Support Vector Machine...")
-    print("Making pipeline...")
 
-    param_pipeline = {"classification__gamma": [0.1,10,100], 'classification__C': [0.1, 10,100], "classification__kernel": ['poly','rbf']}
+# 325 - 5 C=  0.21544346900318834 gamma=  0.00021544346900318823
+# 527 4 C=  C=  0.46415888336127786 gamma=  0.0001291549665014884
+    c_lst = np.linspace(-5,-3,10)
+    gamma_lst = np.logspace(-5,-3,10)
+    for k in range(1):
+        for i in range(1):
+            print ("C= ", c_lst[k] , "gamma= ",gamma_lst[i] )
+            model = SVC(kernel = 'sigmoid', C =  0.46415888336127786 ,gamma = 0.0001291549665014884, probability = True )
+            model.fit(x_train_up,y_train_up)
+            y_pred = model.predict(x_test)
+            y_prob = model.predict_proba(x_test)[:,1]
+            evaluate_model(y_test, y_pred)
 
-    model = Pipeline([
-            ('smt', SMOTE()),
-            ('classification', SVC())])
 
-    print("Performing grid search...")
-    grid = GridSearchCV(model, param_pipeline)
-    grid.fit(x_train, y_train)
-    y_pred = grid.predict(x_test)
-    evaluate_model(y_test, y_pred)
 
 def tune_random_forest():
     # Baseline with oversampling, no tuning
@@ -345,25 +338,16 @@ def kfold_with_smote(model):
     print("avg ROC-AUC: ",      np.mean(roc_auc_scores))
 
 
-#tune_SVM()
-kernels = ['linear','poly','rbf','sigmoid']
-cs = [0.001,0.1,1,100,1000]
-gammas = [0.001,0.1,1,100,1000]
+#getting training and testing data
+df = process_data(print_results=False)
+x_train_up  = df.x_train_over   # Oversampled training data
+y_train_up  = df.y_train_over   # Oversampled training target
+x_train = df.x_train
+y_train = df.y_train
+x_test  = df.x_test
+y_test  = df.y_test
 
-c_lst = np.logspace(-4,0,20)
-plotting = []
-#for i in range(10):
-#    for k in range(10):
-#        print ("values kernel, c, gamma", cs[i], gammas[k])
-for k in range(20):
-    for i in range(20):
-        print (c_lst[i])
-        model = SVC(kernel = 'sigmoid', C = c_lst[k] ,gamma = c_lst[i], probability = True )
-        model.fit(x_train,y_train)
-        y_pred = model.predict(x_test)
-        y_prob = model.predict_proba(x_test)[:,1]
-        evaluate_model(y_test, y_pred)
-
+tune_SVM()
 
 
 
