@@ -1,7 +1,7 @@
 # exoplanet_search
 
 ## General info
-Repository for the 3rd project in FYS-STK 4155. The data used in this project is from The data is taken from https://www.kaggle.com/keplersmachines/kepler-labelled-time-series-data.
+Repository for the 3rd project in FYS-STK 4155. The data used in this project is from The data is taken from https://www.kaggle.com/keplersmachines/kepler-labelled-time-series-data. Note that the plots in visuals/ may differ from those in report.
  
 ## How to Run Code
 
