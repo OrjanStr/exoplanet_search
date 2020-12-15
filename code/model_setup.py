@@ -14,86 +14,102 @@ from sklearn.model_selection  import StratifiedKFold
 from sklearn.preprocessing    import LabelEncoder
 from imblearn.over_sampling   import SMOTE
 from imblearn.pipeline        import Pipeline
-from sklearn.linear_model import RidgeClassifier
 
 
 # Models
-from sklearn.linear_model  import LogisticRegression
 from sklearn.tree          import DecisionTreeClassifier
 from sklearn.ensemble      import RandomForestClassifier
-from sklearn.svm           import SVC
+from sklearn.svm           import SVC, LinearSVC
 
 # Self made classes
 from data_processing import process_data
 
 
 def evaluate_model(model, x_train, x_test, y_train, y_test, rp_title, cm_title, rp_name, cm_name, save=True):
-    """ Evaluate model by chosen metrics """
+    """ Evaluate model and print accuracy, precision and recall. also plot the confusion matrix
+    Arguments:
+            model(class instance): instance of machine learning method from sklearn
+            x_train(matrix): Design matrix for training data
+            x_test(matrix): Design matriix for testing data
+            y_train(array): target array for training data
+            y_test(array): target array for testing data
+            rp_title(string): recall percision AUC plot title
+            cm_title(string):confusion matrix plot title
+            rp_name(string): recall percision AUC plot filename 
+            cm_name(string): confusion matrix filename
+            save (boolean, default = True): if True saves plot to visuals folder
+                
+    """
     model.fit(x_train, y_train)
     y_train_pred = model.predict(x_train)
     y_test_pred  = model.predict(x_test)
 
-    goodTrainscore = metrics.confusion_matrix(y_train, y_train_pred)[1][1]>170 and metrics.confusion_matrix(y_train, y_train_pred)[0][0]>170
-    goodTestscore = metrics.confusion_matrix(y_test, y_test_pred)[1][1]>2 #and metrics.confusion_matrix(y_test, y_test_pred)[0][0]>200
-    
-    if goodTrainscore:
-        # Run through metrics
-        print("\nClassification Results on train")
-        print("Accuracy: ",  metrics.accuracy_score(y_train, y_train_pred))
-        print("Precision: ", metrics.precision_score(y_train, y_train_pred))
-        print("Recall: ",    metrics.recall_score(y_train, y_train_pred))
-    
-        C_train = metrics.confusion_matrix(y_train, y_train_pred)
-        print("Confusion matrix: (TN in top left)\n", C_train)
-    
-        print("\nClassification Results on test")
-        print("Accuracy: ",  metrics.accuracy_score(y_test, y_test_pred))
-        print("Precision: ", metrics.precision_score(y_test, y_test_pred))
-        print("Recall: ",    metrics.recall_score(y_test, y_test_pred))
-    
-        C_test = metrics.confusion_matrix(y_test, y_test_pred)
-        print("Confusion matrix: (TN in top left)\n", C_test)
-    
-        # Plot confusion matrices
-        fig, (ax1, ax2) = plt.subplots(1, 2, figsize=(7, 4))
-        fig.suptitle(cm_title, fontsize=16)
-    
-        sns.heatmap(C_train, ax=ax1, annot=True, cbar=False, cmap="Blues", square=True, fmt="d", annot_kws={"fontsize":12})
-        sns.heatmap(C_test,  ax=ax2, annot=True, cbar=False, cmap="Blues", square=True, fmt="d", annot_kws={"fontsize":12})
-        ax1.set_title("Train", fontsize=14)
-        ax2.set_title("Test", fontsize=14)
-    
-        ax1.set_xlabel("Predicted label", fontsize=14)
-        ax2.set_xlabel("Predicted label", fontsize=14)
-        ax1.set_ylabel("True label", fontsize=14)
-    
-        ax1.tick_params(labelsize='12')
-        ax2.tick_params(labelsize='12')
-    
-        # Save figures
-        if save:
-            plt.savefig("../visuals/" + cm_name + ".pdf")
-        plt.show()
-    
-    #    # Plot precision recall curve (only for test data)
-    #    y_prob = model.predict_proba(x_test)[:,1]
-    #    pres, rec, thresholds = metrics.precision_recall_curve(y_test, y_prob)
-    #
-    #    plt.style.use('seaborn-whitegrid')
-    #    no_skill = len(y_test[y_test==1]) / len(y_test)
-    #    plt.plot([0,1], [no_skill, no_skill], "--", label="No skill")
-    #    plt.plot(rec, pres, label = "model")
-    #    plt.xlabel("Recall", fontsize=14)
-    #    plt.ylabel("Precision", fontsize=14)
-    #    plt.title("Recall precision curve \n" + rp_title, fontsize=16)
-    #    plt.tick_params(labelsize='12')
-    #    plt.legend(fontsize=12)
-    
-        if save:
-            plt.savefig("../visuals/" + rp_name + ".pdf")
-        plt.show()
+    # Run through metrics
+    print("\nClassification Results on train")
+    print("Accuracy: ",  metrics.accuracy_score(y_train, y_train_pred))
+    print("Precision: ", metrics.precision_score(y_train, y_train_pred))
+    print("Recall: ",    metrics.recall_score(y_train, y_train_pred))
+
+    C_train = metrics.confusion_matrix(y_train, y_train_pred)
+    print("Confusion matrix: (TN in top left)\n", C_train)
+
+    print("\nClassification Results on test")
+    print("Accuracy: ",  metrics.accuracy_score(y_test, y_test_pred))
+    print("Precision: ", metrics.precision_score(y_test, y_test_pred))
+    print("Recall: ",    metrics.recall_score(y_test, y_test_pred))
+
+    C_test = metrics.confusion_matrix(y_test, y_test_pred)
+    print("Confusion matrix: (TN in top left)\n", C_test)
+
+    # Plot confusion matrices
+    fig, (ax1, ax2) = plt.subplots(1, 2, figsize=(7, 4))
+    fig.suptitle(cm_title, fontsize=16)
+
+    sns.heatmap(C_train, ax=ax1, annot=True, cbar=False, cmap="Blues", square=True, fmt="d", annot_kws={"fontsize":12})
+    sns.heatmap(C_test,  ax=ax2, annot=True, cbar=False, cmap="Blues", square=True, fmt="d", annot_kws={"fontsize":12})
+    ax1.set_title("Train", fontsize=14)
+    ax2.set_title("Test", fontsize=14)
+
+    ax1.set_xlabel("Predicted label", fontsize=14)
+    ax2.set_xlabel("Predicted label", fontsize=14)
+    ax1.set_ylabel("True label", fontsize=14)
+
+    ax1.tick_params(labelsize='12')
+    ax2.tick_params(labelsize='12')
+
+    # Save figures
+    if save:
+        plt.savefig("../visuals/" + cm_name + ".pdf")
+    plt.show()
+
+#    # Plot precision recall curve (only for test data)
+#    y_prob = model.predict_proba(x_test)[:,1]
+#    pres, rec, thresholds = metrics.precision_recall_curve(y_test, y_prob)
+#
+#    plt.style.use('seaborn-whitegrid')
+#    no_skill = len(y_test[y_test==1]) / len(y_test)
+#    plt.plot([0,1], [no_skill, no_skill], "--", label="No skill")
+#    plt.plot(rec, pres, label = "model")
+#    plt.xlabel("Recall", fontsize=14)
+#    plt.ylabel("Precision", fontsize=14)
+#    plt.title("Recall precision curve \n" + rp_title, fontsize=16)
+#    plt.tick_params(labelsize='12')
+#    plt.legend(fontsize=12)
+
+    if save:
+        plt.savefig("../visuals/" + rp_name + ".pdf")
+    plt.show()
 
 def bootstrap(model, x_train, x_test, y_train, y_test, n_iter=10, print_progress=True):
+    """ Resamples training data and prins metrics
+    model(class instance): instance of machine learning method from sklearn
+    x_train(matrix): Design matrix for training data
+    x_test(matrix): Design matriix for testing data
+    y_train(array): target array for training data
+    y_test(array): target array for testing data
+    n_iter(int, default = 10): How many times to run bootstrap
+    print_progress(boolean, default = True): if True prints progress for every loop
+    """
     # Set up arrays for storage
     accuracy_scores = np.zeros(n_iter)
     recall_scores = np.zeros(n_iter)
@@ -125,15 +141,11 @@ def bootstrap(model, x_train, x_test, y_train, y_test, n_iter=10, print_progress
     print("Recall:   %.3f (%.3f)"%(np.mean(recall_scores), np.var(recall_scores)))
     print("ROC-AUC:  %.3f (%.3f)"%(np.mean(roc_auc_scores), np.var(roc_auc_scores)))
 
-def evaluate_model_CV(model, n_folds):
-    """ Evaluate given model using cross validation """
-    # Define metrics
-    scoring=['accuracy','average_precision','balanced_accuracy','f1','precision','recall','roc_auc']
-    # Cross validate on training set
-    cv = pd.DataFrame(cross_validate(model, x_train, y_train, scoring=scoring, cv=n_folds, shuffle=True))
-    display(cv)
 
 def tune_decision_tree():
+    """
+    tunes decision tree and plots training and test "error" for oversampled data
+    """
     # Fetch model
     dt = DecisionTreeClassifier()
 
@@ -192,21 +204,29 @@ def tune_decision_tree():
     plt.show()
 
 def tune_SVM():
+    """
+    Finds best parameter values for SVM using grid search and evaluate model
+    """
+    model1 = LinearSVC()
 #C=  0.01 gamma=  0.00020691380811147902
-#C=  0.01 gamma=  0.0006951927961775605
+#C=  0.01 gamma=  0.00069519279617756050.008858667904100823
 #C=  0.008858667904100823 gamma=  0.00029763514416313193
-    c_lst = np.logspace(-5,2,20)
-    gamma_lst = np.logspace(-5,2,20)
-    for k in range(20):
-        for i in range(20):
-            print ("C= ", c_lst[k] , "gamma= ",gamma_lst[i] )
-            model = SVC(kernel = 'sigmoid', C =  c_lst[k] ,gamma = gamma_lst[i], probability = True )
-            evaluate_model(model, x_train_up, x_test, y_train_up, y_test, 'SVM', 'Confuse...yes', 'svm_rp_name', 'svm_cm_name')
+    c_lst = np.logspace(-3,2,10)
+    kernel_lst = ['linear','poly', 'sigmoid','rbf']
+    gamma_lst = np.logspace(-1,0,10)
 
+    for i in range(10):
 
+            print (gamma_lst[i])
+            model = SVC(kernel ='sigmoid', gamma = gamma_lst[i] , probability = True )
+            evaluate_model(model, x_train_down, x_test, y_train_down, y_test, 'baseline_CM_SVM', 'Baseline confusion matrix: SVM  ', 'svm_rp_name', 'svm_cm_name')
 
 
 def tune_random_forest():
+    """
+    Finds best parameter values for random forest using random search and prints best 
+    values
+    """
     # Baseline with oversampling, no tuning
     rf = RandomForestClassifier()
     print("RandomForestClassifier, no oversampling, no tuning: ")
@@ -235,58 +255,14 @@ def tune_random_forest():
     rp_name = "rf_rp_over_tune"
     evaluate_model(rf_tune, x_train_up, x_test, y_train_up, y_test, rp_title, cm_title, rp_name, cm_name)
 
-def tune_logistic_regression():
-    print("Starting parameter tuning: Logistic Regression...")
-
-def kfold_with_smote(model):
-    cv = StratifiedKFold(n_splits=5, random_state=42)
-    smoter = SMOTE(random_state=42)
-
-    # Arrays for storing scores
-    accuracy_scores     = []
-    precision_scores    = []
-    recall_scores       = []
-    roc_auc_scores      = []
-
-    # Keeping track of progress
-    current_iter = 1
-    total_iter = 5
-
-    print("Performing oversampled cross validation")
-    for train_fold_index, val_fold_index in cv.split(x_train, y_train):
-        # Fetch training and validation data
-        x_train_fold, y_train_fold = x_train[train_fold_index], y_train[train_fold_index]
-        x_val_fold, y_val_fold = x_train[val_fold_index], y_train[val_fold_index]
-
-        # Oversample training data
-        smoter = SMOTE(random_state=42)
-        x_train_fold_upsample, y_train_fold_upsample = smoter.fit_resample(x_train_fold, y_train_fold)
-
-        # Make prediction
-        model.fit(x_train_fold_upsample, y_train_fold_upsample)
-        y_pred = model.predict(x_val_fold)
-
-        # Store metric scores
-        accuracy_scores .append(metrics.accuracy_score(y_val_fold, y_pred))
-        precision_scores.append(metrics.precision_score(y_val_fold, y_pred))
-        recall_scores   .append(metrics.recall_score(y_val_fold, y_pred))
-        roc_auc_scores  .append(metrics.roc_auc_score(y_val_fold, y_pred))
-
-        # Print progress
-        print(f"Iteration: {current_iter}/{total_iter}")
-        current_iter+=1
-
-    # Print final result
-    print("avg Accuracy: ",     np.mean(accuracy_scores))
-    print("avg Precision: ",    np.mean(precision_scores))
-    print("avg Recall: ",       np.mean(recall_scores))
-    print("avg ROC-AUC: ",      np.mean(roc_auc_scores))
 
 
 #getting training and testing data
 df = process_data(print_results=False)
 x_train_up  = df.x_train_over   # Oversampled training data
 y_train_up  = df.y_train_over   # Oversampled training target
+x_train_down = df.x_train_shrink
+y_train_down = df.y_train_shrink
 x_train = df.x_train
 y_train = df.y_train
 x_test  = df.x_test
