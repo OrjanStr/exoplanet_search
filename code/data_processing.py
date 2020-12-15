@@ -145,7 +145,7 @@ class process_data:
 
         # Standardize data
         scaler = StandardScaler()
-        self.x_train = scaler.fit_transform(self.x_train)
+        self.x_train_over = scaler.fit_transform(self.x_train_over)
         self.x_test = scaler.transform(self.x_test)
 
         self.x_train_over = scaler.transform(self.x_train_over)
