@@ -32,8 +32,8 @@ class process_data:
         self.y_train_shrink = None                      # over and undersampled target
         self.x_train_under =  None                      # undersampled input
         self.y_train_under =  None                      # undersampled target
-        self.path_train     = "../data/exoTrain.csv"    # Path of file containing training data
-        self.path_test      = "../data/exoTest.csv"     # Path of file containing test data
+        self.path_train     = "../../data/exoTrain.csv"    # Path of file containing training data
+        self.path_test      = "../../data/exoTest.csv"     # Path of file containing test data
         self.print_results  = print_results             # Print analysis
 
 
@@ -76,13 +76,10 @@ class process_data:
 #        axs[1].set(ylabel = 'Flux', title =  'Non-exo-planet Star (#51)')
 #        plt.savefig('../visuals/star_flux.pdf')
 #        print("plot saved!")
-#
+
         #removing outliers
         upper_outlier =  self.df_train[self.df_train['FLUX.1']>40000]
         self.df_train = self.df_train.drop((upper_outlier.index), axis=0)
-
-#        lower_outlier =  self.df_train[self.df_train['FLUX.1']<-200000]
-#        self.df_train = self.df_train.drop((lower_outlier.index), axis=0)
 
         # How many positive/negative labels?
         count_train = self.y_train.value_counts().values
@@ -93,13 +90,11 @@ class process_data:
         self.x_train_over, self.y_train_over = sm.fit_sample(self.x_train, self.y_train)
         over_count = self.y_train_over.value_counts().values
 
-
         # Convert labels to one hot
         Encoder = LabelEncoder()
         self.y_train        = Encoder.fit_transform(self.y_train)
         self.y_test         = Encoder.fit_transform(self.y_test)
         self.y_train_over   = Encoder.fit_transform(self.y_train_over)
-
 
         # shrink dataset
         pos_index = self.y_train ==  1
@@ -123,7 +118,6 @@ class process_data:
         sm = SMOTE(random_state=79)
         self.x_train_shrink, self.y_train_shrink = sm.fit_sample(self.x_train_under, self.y_train_under)
 
-
         # Shuffle training data
         idx = np.arange(len(self.y_train_over))
         np.random.shuffle(idx)
@@ -142,7 +136,6 @@ class process_data:
         self.y_train_shrink = self.y_train_shrink[idx]
         self.x_train_shrink = self.x_train_shrink[idx]
 
-
         # Standardize data
         scaler = StandardScaler()
         self.x_train_over = scaler.fit_transform(self.x_train_over)
@@ -151,8 +144,6 @@ class process_data:
         self.x_train_over = scaler.transform(self.x_train_over)
 
         self.x_train_shrink = scaler.transform(self.x_train_shrink)
-
-
 
         # Print analysis
         if self.print_results:
