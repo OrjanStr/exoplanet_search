@@ -35,10 +35,10 @@ def evaluate_model(model, x_train, x_test, y_train, y_test, rp_title, cm_title, 
             y_test(array): target array for testing data
             rp_title(string): recall percision AUC plot title
             cm_title(string):confusion matrix plot title
-            rp_name(string): recall percision AUC plot filename 
+            rp_name(string): recall percision AUC plot filename
             cm_name(string): confusion matrix filename
             save (boolean, default = True): if True saves plot to visuals folder
-                
+
     """
     model.fit(x_train, y_train)
     y_train_pred = model.predict(x_train)
@@ -165,6 +165,59 @@ def tune_decision_tree():
     rp_name = "rp_over_dt"
     evaluate_model(dt, x_train_up, x_test, y_train_up, y_test, rp_title, cm_title, rp_name, cm_name)
 
+    # Perform random search--------------------------------------------------------------
+    n_iter = 10
+    # Set up parameters
+    max_depth = range(2,10)
+    criterion = ['gini', 'entropy']
+    min_samples_split = range(2,10)
+    min_samples_leaf = range(2,5)
+
+    # Arrays for storing used parameters
+    max_depth_array           = []
+    criterion_array           = []
+    min_samples_split_array   = []
+    min_samples_leaf_array    = []
+
+    # Storing result
+    accuracy_scores = []
+    predictions = []
+
+    # Search
+    print("Performing random search")
+    for i in range(n_iter):
+        # Fetch random parameters
+        max_depth_array.append(np.random.choice(max_depth))
+        criterion_array.append(np.random.choice(criterion))
+        min_samples_split_array.append(np.random.choice(min_samples_split))
+        min_samples_leaf_array.append(np.random.choice(min_samples_leaf))
+
+        # Set up model
+        model = DecisionTreeClassifier(
+        #max_depth = max_depth_array[i],
+        #criterion = criterion_array[i],
+        #min_samples_split = min_samples_split_array[i],
+        #min_samples_leaf = min_samples_leaf_array[i]
+        )
+
+        # Make prediction
+        model.fit(x_train_up, y_train_up)
+        y_pred = model.predict(x_test)
+        predictions.append(y_pred)
+        accuracy_scores.append(metrics.recall_score(y_test, y_pred))
+
+        # Print progress
+        print("Iteration: %i/%i" %(i+1, n_iter))
+
+    idx = np.argmax(accuracy_scores)
+    print("max_depth: ", max_depth_array[i])
+    print("criterion: ", criterion_array[i])
+    print("min_samples_split: ", min_samples_split_array[i])
+    print("min_samples_leaf: ", min_samples_leaf_array[i])
+    print(metrics.confusion_matrix(y_test, predictions[idx]))
+    exit()
+
+
     # Bootstrap
     print("\n\nBootstrap resampling on oversampled model")
     #bootstrap(dt, x_train, x_test, y_train, y_test, n_iter = 10);
@@ -217,14 +270,14 @@ def tune_SVM():
 
     for i in range(10):
 
-            print (gamma_lst[i])
-            model = SVC(kernel ='sigmoid', gamma = gamma_lst[i] , probability = True )
+            print (c_lst[i])
+            model = SVC(kernel ='sigmoid', gamma = 0.36 ,C = c_lst[i], probability = True )
             evaluate_model(model, x_train_down, x_test, y_train_down, y_test, 'baseline_CM_SVM', 'Baseline confusion matrix: SVM  ', 'svm_rp_name', 'svm_cm_name')
 
 
 def tune_random_forest():
     """
-    Finds best parameter values for random forest using random search and prints best 
+    Finds best parameter values for random forest using random search and prints best
     values
     """
     # Baseline with oversampling, no tuning
@@ -244,16 +297,17 @@ def tune_random_forest():
     }
 
     # Set up model and fit to data
-    search = RandomizedSearchCV(rf, params, n_iter=2)
+    search = RandomizedSearchCV(rf, params, n_iter=15)
     search.fit(x_train, y_train)
     print(search.best_params_)
     print(search.best_score_)
 
+    rf_tune = RandomForestClassifier(search.best_params_)
     cm_title = "Oversample confusion matrix: Tuned random forest"
     rp_title = "Random forest: SMOTE oversampling, tuned"
     cm_name = "rf_cm_over_tune"
     rp_name = "rf_rp_over_tune"
-    evaluate_model(rf_tune, x_train_up, x_test, y_train_up, y_test, rp_title, cm_title, rp_name, cm_name)
+    evaluate_model(search, x_train, x_test, y_train, y_test, rp_title, cm_title, rp_name, cm_name)
 
 
 
