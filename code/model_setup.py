@@ -260,19 +260,18 @@ def tune_SVM():
     """
     Finds best parameter values for SVM using grid search and evaluate model
     """
-    model1 = LinearSVC()
 #C=  0.01 gamma=  0.00020691380811147902
 #C=  0.01 gamma=  0.00069519279617756050.008858667904100823
 #C=  0.008858667904100823 gamma=  0.00029763514416313193
-    c_lst = np.logspace(-3,2,10)
+    c_lst = [1,1.2,1.5,1.8,2,4]
     kernel_lst = ['linear','poly', 'sigmoid','rbf']
     gamma_lst = np.logspace(-1,0,10)
 
-    for i in range(10):
+    for i in range(1):
 
             print (c_lst[i])
-            model = SVC(kernel ='sigmoid', gamma = 0.36 ,C = c_lst[i], probability = True )
-            evaluate_model(model, x_train_down, x_test, y_train_down, y_test, 'baseline_CM_SVM', 'Baseline confusion matrix: SVM  ', 'svm_rp_name', 'svm_cm_name')
+            model = SVC(kernel ='sigmoid', gamma = 0.36 ,C = 1.5, probability = True )
+            evaluate_model(model, x_train_down, x_test, y_train_down, y_test, 'oversampled_CM_SVM', 'Tuned SVM with oversampling ', 'svm_rp_name', 'tuned_svm_cm_name')
 
 
 def tune_random_forest():
