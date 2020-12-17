@@ -58,16 +58,17 @@ class process_data:
         if self.plot:
 #           #plotting outliers
             ax = sb.boxplot(data=self.df_train, x='LABEL', y = 'FLUX.1')
-            ax.set(xlabel= "Class", ylabel = 'Flux for Feature[0]')
-            plt.title('First recorded flux for training stars')
+            ax.set_xlabel("Class", fontsize=16)
+            ax.set_ylabel('Flux for Feature[0]', fontsize=16)
+            plt.title('First recorded flux for training stars', fontsize=16)
             print("plot saved!")
             plt.savefig('../../visuals/outliers.pdf')
-    
+
             #plotting example data
             star_pos = self.x_train.iloc[26]
             star_neg = self.x_train.iloc[4999]
             t = np.linspace(0,1920, len(star_pos))
-    
+
             fig, axs = plt.subplots(2, sharex= True)
             axs[0].plot(t,star_pos)
             axs[1].plot(t,star_neg)
@@ -90,8 +91,8 @@ class process_data:
         sm = SMOTE(random_state=42)
         self.x_train_over, self.y_train_over = sm.fit_sample(self.x_train, self.y_train)
         over_count = self.y_train_over.value_counts().values
-        
-        
+
+
 
         # Convert labels to one hot
         Encoder = LabelEncoder()
@@ -108,19 +109,19 @@ class process_data:
 
         neg_x = self.x_train[neg_index]
         neg_y = self.y_train[neg_index]
-        
-        
-        #---mean and std of class 0 and 1 
+
+
+        #---mean and std of class 0 and 1
         neg_std = np.std(neg_x, axis = 0)
         pos_std = np.std(pos_x, axis = 0)
 
         neg_mean = np.mean(neg_x,axis=0)
         pos_mean = np.mean(pos_x,axis=0)
-        
-        
+
+
         if self.plot:
             x_plot = np.linspace(0,3197-1,3197)
-            
+            plt.figure(figsize = (6.8, 4.8))
             plt.plot(x_plot,neg_std, label = 'Class 1')
             plt.plot(x_plot,pos_std, label = 'Class 0')
             plt.title('Standard deviation for both classes',  fontsize='16')
@@ -130,8 +131,8 @@ class process_data:
             plt.savefig('../../visuals/std.pdf')
             print ('Plot saved!')
             plt.show()
-            
-            
+
+            plt.figure(figsize = (6.8, 4.8))
             plt.plot(x_plot, neg_mean, label = 'Class 1')
             plt.plot(x_plot,pos_mean, label = 'Class 0')
             plt.title('Mean for both classes',  fontsize='16')
@@ -141,7 +142,7 @@ class process_data:
             plt.savefig('../../visuals/mean.pdf')
             print ('Plot saved!')
             plt.show()
-        
+
 
         index_choice = np.linspace(0,len(neg_y)-1, len(neg_y))
         random_index = (np.random.choice(index_choice, size= 400, replace = False)).astype(int)
@@ -183,7 +184,7 @@ class process_data:
         self.x_train = scaler.transform(self.x_train)
 
         self.x_train_shrink = scaler.transform(self.x_train_shrink)
-        
+
 
         # Print analysis
         if self.print_results:
