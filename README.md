@@ -6,7 +6,7 @@ Repository for the 3rd project in FYS-STK 4155. The data used in this project is
 ## How to Run Code
 
 ### Unzip data
-go to * [data](data) folder and unzip "archive.zip" so that the data folder contains two csv files: "exoTrain.csv" and "exoTest.csv" 
+go to * [data](data) folder and unzip "archive.zip" so that the data folder contains two csv files: "exoTrain.csv" and "exoTest.csv" or download the data directly from kaggle.
 
 ### pipenv
 We were not able to create a pipenv because of some complications with our computers and the python installation. 
