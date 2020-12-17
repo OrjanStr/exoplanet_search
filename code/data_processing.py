@@ -32,6 +32,7 @@ class process_data:
         self.y_train_shrink = None                      # over and undersampled target
         self.x_train_under =  None                      # undersampled input
         self.y_train_under =  None                      # undersampled target
+
         self.path_train     = "../../data/exoTrain.csv"    # Path of file containing training data
         self.path_test      = "../../data/exoTest.csv"     # Path of file containing test data
         self.print_results  = print_results             # Print analysis
@@ -212,7 +213,7 @@ class process_data:
             plt.ylabel('Number of stars', fontsize = 14)
             plt.legend()
             plt.tight_layout()
-            plt.savefig('../visuals/chart.pdf')
+            plt.savefig('../../visuals/chart.pdf')
             print("plot saved!")
             plt.show()
 
