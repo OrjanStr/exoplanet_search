@@ -141,7 +141,7 @@ class process_data:
         self.x_train_over = scaler.fit_transform(self.x_train_over)
         self.x_test = scaler.transform(self.x_test)
 
-        self.x_train_over = scaler.transform(self.x_train_over)
+        self.x_train = scaler.transform(self.x_train)
 
         self.x_train_shrink = scaler.transform(self.x_train_shrink)
 

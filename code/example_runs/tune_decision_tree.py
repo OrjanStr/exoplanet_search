@@ -27,7 +27,7 @@ def tune_decision_tree():
 
     print("\n\nDecision tree with oversampling, tuned: ")
     cm_title = "Confusion matrix: Tuned decision tree"
-    rp_title = "Decision tree: No oversampling, tuned"
+    rp_title = "Decision tree: Oversampling, tuned"
     cm_name = "cm_tuned_dt"
     rp_name = "rp_tuned_dt"
     #evaluate_model(model, x_train, x_test, y_train, y_test, rp_title, cm_title, rp_name, cm_name)
