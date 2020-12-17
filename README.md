@@ -15,13 +15,14 @@ We were not able to create a pipenv because of some complications with our compu
 * [Visuals](visuals)
 * [Code](code)
 * [Example runs](code/example_runs)
+* [Test_runs](test_runs)
 * [Report](report)
 
 
 ## example use 
 
 ## test of code/benchmarks
-to test the function write
+to test the function, while in [Test runs](test_runs), write
 ```
 pytest -v 
 ```
