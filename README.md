@@ -8,18 +8,8 @@ Repository for the 3rd project in FYS-STK 4155. The data used in this project is
 ### Unzip data
 go to * [data](data) folder and unzip "archive.zip" so that the data folder contains two csv files: "exoTrain.csv" and "exoTest.csv" 
 
-### prepare pipenv (python 3.7)
-* install pipenv on your system 
-* clone the repository
-*  in correct folder, type:
-```
-install pipenv
-```
-* enter shell:
-```
-pipenv shell
-```
-* run code file as normal
+### pipenv
+We were not able to create a pipenv because of some complications with our computers and the python installation. 
 
 ## Table of contents
 * [Visuals](visuals)
@@ -36,3 +26,4 @@ to test the function write
 pytest -v 
 ```
 or run the program normally. this also serves as benchmarks to check that each part of the code is running as expected.
+The parts of the code implemented with scikit Learn does not have tests as this package is extensively tested already.

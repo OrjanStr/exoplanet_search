@@ -91,6 +91,7 @@ def evaluate_model(model, x_train, x_test, y_train, y_test, rp_title, cm_title, 
     if save:
         plt.savefig("../../visuals/" + rp_name + ".pdf")
     plt.show()
+    
 
 def bootstrap(model, x_train, x_test, y_train, y_test, n_iter=10, print_progress=True):
     """ Resamples training data and prins metrics
