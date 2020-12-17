@@ -13,7 +13,7 @@ import seaborn as sb
 from scipy.ndimage import filters
 
 class process_data:
-    def __init__(self, print_results=True):
+    def __init__(self, print_results=True, plot = False):
         """
         For reading and processing exoplanet data.
         Arguments:
@@ -35,7 +35,7 @@ class process_data:
         self.path_train     = "../../data/exoTrain.csv"    # Path of file containing training data
         self.path_test      = "../../data/exoTest.csv"     # Path of file containing test data
         self.print_results  = print_results             # Print analysis
-
+        self.plot = plot
 
         # Read and process data
         self.read_data()
@@ -55,27 +55,28 @@ class process_data:
         """ Process data for ease of use
         removes outliers, over and undersamples data, shuffles and standardizes data.
         """
-
-#        #plotting outliers
-#        ax = sb.boxplot(data=self.df_train, x='LABEL', y = 'FLUX.1')
-#        ax.set(xlabel= "Class", ylabel = 'Flux for Feature[0]')
-#        plt.title('First recorded flux for training stars')
-#        print("plot saved!")
-#        plt.savefig('../visuals/outliers.pdf')
-#
-#        #plotting example data
-#        star_pos = self.x_train.iloc[35]
-#        star_neg = self.x_train.iloc[50]
-#        t = np.linspace(0,1920, len(star_pos))
-#
-#        fig, axs = plt.subplots(2, sharex= True)
-#        axs[0].plot(t,star_pos)
-#        axs[1].plot(t,star_neg)
-#        plt.xlabel('Time[Hours]')
-#        axs[0].set(ylabel = 'Flux', title = 'Exo-planet Star (#36)')
-#        axs[1].set(ylabel = 'Flux', title =  'Non-exo-planet Star (#51)')
-#        plt.savefig('../visuals/star_flux.pdf')
-#        print("plot saved!")
+        if self.plot:
+#           #plotting outliers
+            ax = sb.boxplot(data=self.df_train, x='LABEL', y = 'FLUX.1')
+            ax.set(xlabel= "Class", ylabel = 'Flux for Feature[0]')
+            plt.title('First recorded flux for training stars')
+            print("plot saved!")
+            plt.savefig('../../visuals/outliers.pdf')
+    
+            #plotting example data
+            star_pos = self.x_train.iloc[26]
+            star_neg = self.x_train.iloc[4999]
+            t = np.linspace(0,1920, len(star_pos))
+    
+            fig, axs = plt.subplots(2, sharex= True)
+            axs[0].plot(t,star_pos)
+            axs[1].plot(t,star_neg)
+            plt.xlabel('Time[Hours]')
+            axs[0].set(ylabel = 'Flux', title = 'Exo-planet Star (#27)')  #27 36 31
+            axs[1].set(ylabel = 'Flux', title =  'Non-exo-planet Star (#5000)') #51 #5000 #1000
+            plt.savefig('../../visuals/star_flux.pdf')
+            print("plot saved!")
+            plt.show()
 
         #removing outliers
         upper_outlier =  self.df_train[self.df_train['FLUX.1']>40000]
@@ -89,12 +90,15 @@ class process_data:
         sm = SMOTE(random_state=42)
         self.x_train_over, self.y_train_over = sm.fit_sample(self.x_train, self.y_train)
         over_count = self.y_train_over.value_counts().values
+        
+        
 
         # Convert labels to one hot
         Encoder = LabelEncoder()
         self.y_train        = Encoder.fit_transform(self.y_train)
         self.y_test         = Encoder.fit_transform(self.y_test)
         self.y_train_over   = Encoder.fit_transform(self.y_train_over)
+
 
         # shrink dataset
         pos_index = self.y_train ==  1
@@ -104,6 +108,40 @@ class process_data:
 
         neg_x = self.x_train[neg_index]
         neg_y = self.y_train[neg_index]
+        
+        
+        #---mean and std of class 0 and 1 
+        neg_std = np.std(neg_x, axis = 0)
+        pos_std = np.std(pos_x, axis = 0)
+
+        neg_mean = np.mean(neg_x,axis=0)
+        pos_mean = np.mean(pos_x,axis=0)
+        
+        
+        if self.plot:
+            x_plot = np.linspace(0,3197-1,3197)
+            
+            plt.plot(x_plot,neg_std, label = 'Class 1')
+            plt.plot(x_plot,pos_std, label = 'Class 0')
+            plt.title('Standard deviation for both classes',  fontsize='16')
+            plt.xlabel('feature number',fontsize='16')
+            plt.ylabel('std',fontsize='16')
+            plt.legend()
+            plt.savefig('../../visuals/std.pdf')
+            print ('Plot saved!')
+            plt.show()
+            
+            
+            plt.plot(x_plot, neg_mean, label = 'Class 1')
+            plt.plot(x_plot,pos_mean, label = 'Class 0')
+            plt.title('Mean for both classes',  fontsize='16')
+            plt.xlabel('feature number',fontsize='16')
+            plt.ylabel('mean',fontsize='16')
+            plt.legend()
+            plt.savefig('../../visuals/mean.pdf')
+            print ('Plot saved!')
+            plt.show()
+        
 
         index_choice = np.linspace(0,len(neg_y)-1, len(neg_y))
         random_index = (np.random.choice(index_choice, size= 400, replace = False)).astype(int)
@@ -123,6 +161,7 @@ class process_data:
         np.random.shuffle(idx)
         self.y_train_over = self.y_train_over[idx]
         self.x_train_over = self.x_train_over.iloc[idx]
+
 
         idx = np.arange(len(self.y_train))
         np.random.shuffle(idx)
@@ -144,6 +183,7 @@ class process_data:
         self.x_train_over = scaler.transform(self.x_train_over)
 
         self.x_train_shrink = scaler.transform(self.x_train_shrink)
+        
 
         # Print analysis
         if self.print_results:
@@ -173,6 +213,7 @@ class process_data:
             plt.tight_layout()
             plt.savefig('../visuals/chart.pdf')
             print("plot saved!")
+            plt.show()
 
             print("\nData properties -------------")
             print("Train - outliers (rows, cols): ", self.df_train.shape)
